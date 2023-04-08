@@ -25,7 +25,7 @@ jobs:
     - name: Pack nuget
       run: dotnet pack -c Release
     - name: Publish NuGets (if this version not published before)
-      run: dotnet nuget push src\*.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET }} --skip-duplicate
+      run: dotnet nuget push src\NovaSBE.Finance\bin\Release\*.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET }} --skip-duplicate
 
 # NUGET_ORG_TOKEN_2020 is listed in "Repository secrets" in https://github.com/fsprojects/FSharp.Data/settings/secrets/actions
 # note, the nuget org token expires around June 2021
