@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.2-beta4 - 2023-04-09
+* Perf improve reflection
+
 ## 0.0.2-beta3 - 2023-04-09
 
 * Adding OLS tests

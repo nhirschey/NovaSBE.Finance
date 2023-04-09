@@ -203,7 +203,7 @@ type Ols<'Record>(formula: string, data: 'Record seq) =
         |> Array.find (fun f -> f.Name = variable)
         |> Reflection.FSharpValue.PreComputeRecordFieldReader
 
-    let xfields = xvars |> Seq.map getField
+    let xfields = xvars |> Seq.map getField |> Seq.toArray
     let yfield = getField yvar
 
     let exog =
