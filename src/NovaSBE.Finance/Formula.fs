@@ -33,7 +33,7 @@ module internal List =
     let partitionUntilLookahead p input =
         partitionWhileLookahead (p >> not) input
 
-module Char =
+module internal Char =
     let (|WhiteSpace|_|) input =
         match input with
         | [] -> Some input
@@ -52,39 +52,41 @@ module Char =
     let toStringList (input: char list) =
         input |> List.map string |> String.concat ""
 
-let (|Yvar|_|) input =
-    match input with
-    | Char.AlphaNum _ ->
-        let yvar, rest = List.partitionWhile Char.IsLetterOrDigit input
+module internal FormulaPatterns =
+    let (|Yvar|_|) input =
+        match input with
+        | Char.AlphaNum _ ->
+            let yvar, rest = List.partitionWhile Char.IsLetterOrDigit input
 
-        let rec toTilde input =
-            match input with
-            | '~' :: rest -> Some rest
-            | Char.WhiteSpace(x :: xs) -> toTilde xs
-            | _ -> None
+            let rec toTilde input =
+                match input with
+                | '~' :: rest -> Some rest
+                | Char.WhiteSpace(x :: xs) -> toTilde xs
+                | _ -> None
 
-        match toTilde rest with
-        | None -> None
-        | Some xvars -> Some(Char.toStringList yvar, xvars)
-    | _ -> None
-
-let (|Xvar|_|) input =
-    match input with
-    | Char.AlphaNum _ ->
-        let xvar, rest = List.partitionWhile Char.IsLetterOrDigit input
-        Some(Char.toStringList xvar, rest)
-    | _ -> None
-
-let (|NoIntercept|_|) input =
-    match input with
-    | '-' :: rest ->
-        match List.partitionWhile Char.IsWhiteSpace rest with
-        | _ws, '1' :: '.' :: '0' :: rest
-        | _ws, '1' :: '.' :: rest
-        | _ws, '1' :: rest -> Some rest
+            match toTilde rest with
+            | None -> None
+            | Some xvars -> Some(Char.toStringList yvar, xvars)
         | _ -> None
-    | _ -> None
 
+    let (|Xvar|_|) input =
+        match input with
+        | Char.AlphaNum _ ->
+            let xvar, rest = List.partitionWhile Char.IsLetterOrDigit input
+            Some(Char.toStringList xvar, rest)
+        | _ -> None
+
+    let (|NoIntercept|_|) input =
+        match input with
+        | '-' :: rest ->
+            match List.partitionWhile Char.IsWhiteSpace rest with
+            | _ws, '1' :: '.' :: '0' :: rest
+            | _ws, '1' :: '.' :: rest
+            | _ws, '1' :: rest -> Some rest
+            | _ -> None
+        | _ -> None
+
+open FormulaPatterns
 
 let parseFormula (formula: string) =
     let rec loop yvar xvars intercept input =

@@ -7,6 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CBE4DC18-8E9
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "NovaSBE.Finance", "src\NovaSBE.Finance\NovaSBE.Finance.fsproj", "{540BE73E-BD2F-4D3C-AB6A-D97A71D2B2B5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{812CEAF6-FC1D-4626-9078-1AC0616CCA10}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "NovaSBE.Finance.Tests", "tests\NovaSBE.Finance.Tests\NovaSBE.Finance.Tests.fsproj", "{815E801F-FB01-4D9E-99C7-A8286C47E3F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,8 +24,13 @@ Global
 		{540BE73E-BD2F-4D3C-AB6A-D97A71D2B2B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{540BE73E-BD2F-4D3C-AB6A-D97A71D2B2B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{540BE73E-BD2F-4D3C-AB6A-D97A71D2B2B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{815E801F-FB01-4D9E-99C7-A8286C47E3F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{815E801F-FB01-4D9E-99C7-A8286C47E3F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{815E801F-FB01-4D9E-99C7-A8286C47E3F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{815E801F-FB01-4D9E-99C7-A8286C47E3F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{540BE73E-BD2F-4D3C-AB6A-D97A71D2B2B5} = {CBE4DC18-8E99-4A54-8138-F9B2327E881A}
+		{815E801F-FB01-4D9E-99C7-A8286C47E3F4} = {812CEAF6-FC1D-4626-9078-1AC0616CCA10}
 	EndGlobalSection
 EndGlobal

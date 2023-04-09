@@ -7,7 +7,7 @@ open FSharp.Stats.Distributions
 
 open NovaSBE.Finance.Formula
 
-let forg prec x =
+let internal forg prec x =
     if prec = 3 then
         // for 3 decimals
         if (abs (x) >= 1e4) || (abs (x) < 1e-4) then
@@ -24,7 +24,7 @@ let forg prec x =
 
 type CovType = Nonrobust
 
-type RegressionResults(df_model, df_resid, endog, exog, endog_names, exog_names, intercept, covtype) =
+type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, exog_names, intercept, covtype) =
     let x = exog |> Matrix.ofJaggedArray
     let y = endog |> Vector.ofArray
     let nobs' = y.Length
@@ -41,7 +41,7 @@ type RegressionResults(df_model, df_resid, endog, exog, endog_names, exog_names,
     let errors = y - yhat
     let ssr' = errors |> Vector.toThePower 2.0 |> Vector.sum
     let ess' = ss - ssr'
-    let sigma2_hat = ssr' / df_resid
+    let sigma2_hat = ssr' / float df_resid
 
     let stderrors =
         (sigma2_hat * ((x.Transpose * x) |> LinearAlgebra.Inverse)).Diagonal
@@ -61,7 +61,7 @@ type RegressionResults(df_model, df_resid, endog, exog, endog_names, exog_names,
         1.0 - fdist.CDF fvalue'
 
     let r2 = 1.0 - ssr' / ss
-    let r2adj = 1.0 - (float nobs' - 1.0) / df_resid * (1.0 - r2)
+    let r2adj = 1.0 - (float nobs' - 1.0) / float df_resid * (1.0 - r2)
     /// Model degress of freedom
     member _.df_model = df_model
     member _.df_resid = df_resid
@@ -100,8 +100,8 @@ type RegressionResults(df_model, df_resid, endog, exog, endog_names, exog_names,
 
     /// Summarise the regression results
     member _.summary(?yname: string, ?xname: seq<string>, ?title: string, ?alpha: float, ?slim: bool) =
-        let yname = defaultArg yname "y"
-        let xname = defaultArg xname [| "x" |]
+        let yname = defaultArg yname endog_names
+        let xname = defaultArg xname exog_names
         let title = defaultArg title "OLS Regression Results"
         let alpha = defaultArg alpha 0.05
         let slim = defaultArg slim false
@@ -185,7 +185,7 @@ type RegressionResults(df_model, df_resid, endog, exog, endog_names, exog_names,
 
         let table = top @ table_params
 
-        table |> List.iter (printfn "%s")
+        table |> String.concat "\n"
 
 
 type FitMethod =
