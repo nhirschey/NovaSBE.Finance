@@ -3,6 +3,7 @@
 #r "nuget: FsUnit.xUnit"
 #r "nuget: FSharp.Data"
 #r "nuget: FSharp.Stats"
+#r "nuget: DiffSharp-lite"
 #else
 module NovaSBE.Finance.Tests.Ols
 #endif

@@ -5,6 +5,9 @@ open FSharp.Stats
 open FSharp.Stats.Algebra
 open FSharp.Stats.Distributions
 
+open DiffSharp
+dsharp.config(dtype=Dtype.Float64)
+
 open NovaSBE.Finance.Formula
 
 let internal forg prec x =
@@ -25,43 +28,38 @@ let internal forg prec x =
 type CovType = Nonrobust
 
 type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, exog_names, intercept, covtype) =
-    let x = exog |> matrix
-    let y = endog |> Vector.ofArray
-    let nobs' = y.Length
-    let coefs' = Algebra.LinearAlgebra.LeastSquaresCholesky x y
-    let yhat = x * coefs'
+    let x = exog |> dsharp.tensor
+    let y = endog |> dsharp.tensor
+    let nobs' = y.nelement
+    let coefs' = (x.transpose().matmul(x).inv()).matmul(x.transpose().matmul(y))
+    let yhat = x.matmul(coefs')
 
     let ss =
         if intercept then
-            let ybar = y |> Vector.mean
-            y |> Vector.map (fun yi -> (yi - ybar) ** 2.0) |> Vector.sum
+            let ybar = y.mean()
+            (y - ybar).pow(2.0).sum()
         else
-            y |> Vector.toThePower 2.0 |> Vector.sum
+            y.pow(2.0).sum()
 
     let errors = y - yhat
-    let ssr' = errors |> Vector.toThePower 2.0 |> Vector.sum
-    let ess' = ss - ssr'
+    let ssr' = errors.pow(2.0).sum() |> float
+    let ess' = float ss - ssr'
     let sigma2_hat = ssr' / float df_resid
 
     let stderrors =
-        (sigma2_hat * ((x.Transpose * x) |> LinearAlgebra.Inverse)).Diagonal
-        |> Vector.toThePower 0.5
-        |> Vector.toArray
-
-    let tv =
-        [| for i = 0 to coefs'.Length - 1 do
-               coefs'[i] / stderrors[i] |]
+        (sigma2_hat * x.transpose().matmul(x).inv()).diagonal().pow(0.5)
+    let tv = coefs' / stderrors
 
     let studentT = Continuous.StudentT.Init 0.0 1.0 df_resid
-    let pvalues' = tv |> Array.map (fun t -> 2.0 * (1.0 - (studentT.CDF(abs t))))
-    let fvalue' = ((ss - ssr') / float df_model) / (ssr' / float df_resid)
+    let pvalues' = tv.toArray1D() |> Array.map (fun t -> 2.0 * (1.0 - (studentT.CDF(abs t))))
+    let fvalue' = ((ss - ssr') / float df_model) / (ssr' / float df_resid) |> float
 
     let f_pvalue' =
         let fdist = ContinuousDistribution.f df_model df_resid
         1.0 - fdist.CDF fvalue'
 
-    let r2 = 1.0 - ssr' / ss
-    let r2adj = 1.0 - (float nobs' - 1.0) / float df_resid * (1.0 - r2)
+    let r2 = 1.0 - ssr' / ss |> float
+    let r2adj = 1.0 - (float nobs' - 1.0) / float df_resid * (1.0 - r2) |> float
     /// Model degress of freedom
     member _.df_model = df_model
     member _.df_resid = df_resid
@@ -74,19 +72,19 @@ type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, e
     /// The p-value of the F-statistic
     member _.f_pvalue = f_pvalue'
     /// The fitted values of the model
-    member _.fittedvalues = yhat.ToArray()
+    member _.fittedvalues = yhat.toArray1D<float>()
     /// The mean squared error of the model
     member _.mse_model = ess' / float df_model
     /// The mean squared error of the residuals
     member _.mse_resid = ssr' / float df_resid
     /// Total mean squared error
-    member _.mse_total = (y |> Vector.toThePower 2.0 |> Vector.sum) / float nobs'
+    member _.mse_total = float (y.pow(2.0).sum())/ float nobs' 
     /// The number of observations
     member _.nobs = nobs'
     /// Two-sided p-values for the model coefficients
     member _.pvalues = (exog_names, pvalues') ||> Array.zip |> Map
     /// The model residuals
-    member _.resid = errors.ToArray()
+    member _.resid = errors.toArray1D<float>()
     /// The R-squared of the model
     member _.rsquared = r2
     /// The adjusted R-squared of the model
@@ -94,9 +92,9 @@ type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, e
     /// Sum of squared residuals
     member _.ssr = ssr'
     /// The t-statistics of the model coefficients
-    member _.tvalues = (exog_names, tv) ||> Array.zip |> Map
+    member _.tvalues = (exog_names, tv.toArray1D<float>()) ||> Array.zip |> Map
     /// The estimated model coefficients
-    member _.coefs = (exog_names, coefs'.ToArray()) ||> Array.zip |> Map
+    member _.coefs = (exog_names, coefs'.toArray1D<float>()) ||> Array.zip |> Map
 
     /// Summarise the regression results
     member _.summary(?yname: string, ?xname: seq<string>, ?title: string, ?alpha: float, ?slim: bool) =
@@ -175,12 +173,12 @@ type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, e
                 $"{1.0 - alpha / 2.0}]" ]
               for i = 0 to exog_names.Length - 1 do
                   [ exog_names[i]
-                    forg 4 coefs'[i]
-                    forg 3 stderrors[i]
-                    forg 3 tv[i]
+                    forg 4 (float coefs'[i])
+                    forg 3 (float stderrors[i])
+                    forg 3 (float tv[i])
                     sprintf "%6.3g" pvalues'[i]
-                    forg 3 (coefs'[i] - criticalT * stderrors[i])
-                    forg 3 (coefs'[i] + criticalT * stderrors[i]) ] ]
+                    forg 3 (coefs'[i] - criticalT * stderrors[i] |> float)
+                    forg 3 (coefs'[i] + criticalT * stderrors[i] |> float) ] ]
             |> padWidth
 
         let table = top @ table_params

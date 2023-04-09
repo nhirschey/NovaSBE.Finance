@@ -11,6 +11,7 @@
     <Compile Include="Ols.fs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="DiffSharp-lite" Version="1.0.7" />
     <PackageReference Include="FSharp.Data" Version="5.0.2" />
     <PackageReference Include="FSharp.Stats" Version="0.4.11" />
     <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.1.8" PrivateAssets="all" />
