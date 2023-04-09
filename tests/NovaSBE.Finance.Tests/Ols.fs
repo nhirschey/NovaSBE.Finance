@@ -100,10 +100,10 @@ module Statsmodels =
             |> Map
         let actual = results.coefs
         
-        expected.Keys |> should equalSeq actual.Keys
-        expected["Intercept"] |> should (equalWithin tol) actual["Intercept"]
-        expected["Literacy"] |> should (equalWithin tol) actual["Literacy"]
-        expected["LogPopulation"] |> should (equalWithin tol) actual["LogPopulation"]
+        actual.Keys |> should equalSeq expected.Keys
+        actual["Intercept"] |> should (equalWithin tol) expected["Intercept"]
+        actual["Literacy"] |> should (equalWithin tol) expected["Literacy"]
+        actual["LogPopulation"] |> should (equalWithin tol) expected["LogPopulation"]
 
     [<Fact>]
     let ``tvalues`` () =
@@ -114,10 +114,10 @@ module Statsmodels =
             |> Map
         let actual = results.tvalues
         
-        expected.Keys |> should equalSeq actual.Keys
-        expected["Intercept"] |> should (equalWithin tol) actual["Intercept"]
-        expected["Literacy"] |> should (equalWithin tol) actual["Literacy"]
-        expected["LogPopulation"] |> should (equalWithin tol) actual["LogPopulation"]
+        actual.Keys |> should equalSeq expected.Keys
+        actual["Intercept"] |> should (equalWithin tol) expected["Intercept"]
+        actual["Literacy"] |> should (equalWithin tol) expected["Literacy"]
+        actual["LogPopulation"] |> should (equalWithin tol) expected["LogPopulation"]
 
     [<Fact>]
     let ``pvalues`` () =
@@ -128,10 +128,10 @@ module Statsmodels =
             |> Map
         let actual = results.pvalues
         
-        expected.Keys |> should equalSeq actual.Keys
-        expected["Intercept"] |> should (equalWithin tol) actual["Intercept"]
-        expected["Literacy"] |> should (equalWithin tol) actual["Literacy"]
-        expected["LogPopulation"] |> should (equalWithin tol) actual["LogPopulation"]
+        actual.Keys |> should equalSeq expected.Keys
+        actual["Intercept"] |> should (equalWithin tol) expected["Intercept"]
+        actual["Literacy"] |> should (equalWithin tol) expected["Literacy"]
+        actual["LogPopulation"] |> should (equalWithin tol) expected["LogPopulation"]
 
     [<Fact>]
     let ``resid`` () =
@@ -149,12 +149,12 @@ module Statsmodels =
         
         let actual = results.resid[..9]
 
-        expected |> should haveLength actual.Length
+        actual |> should haveLength expected.Length
 
         (expected, actual)
         ||> Array.zip
         |> Array.map (fun (exp, act) ->
-            exp |> should (equalWithin tol) act)
+            act |> should (equalWithin tol) exp)
 
     open System.Text.RegularExpressions
     [<Fact>]
