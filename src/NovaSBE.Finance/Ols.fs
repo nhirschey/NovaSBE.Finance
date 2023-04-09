@@ -25,10 +25,10 @@ let internal forg prec x =
 type CovType = Nonrobust
 
 type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, exog_names, intercept, covtype) =
-    let x = exog |> Matrix.ofJaggedArray
+    let x = exog |> matrix
     let y = endog |> Vector.ofArray
     let nobs' = y.Length
-    let coefs' = Algebra.LinearAlgebra.LeastSquares x y
+    let coefs' = Algebra.LinearAlgebra.LeastSquaresCholesky x y
     let yhat = x * coefs'
 
     let ss =
