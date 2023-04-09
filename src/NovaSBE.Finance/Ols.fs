@@ -6,7 +6,9 @@ open FSharp.Stats.Algebra
 open FSharp.Stats.Distributions
 
 open DiffSharp
-dsharp.config(dtype=Dtype.Float64)
+
+// The config seems to get ignored so I manually set float64 below
+dsharp.config(dtype=Dtype.Float64,backend=Backend.Reference)
 
 open NovaSBE.Finance.Formula
 
@@ -28,8 +30,8 @@ let internal forg prec x =
 type CovType = Nonrobust
 
 type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, exog_names, intercept, covtype) =
-    let x = exog |> dsharp.tensor
-    let y = endog |> dsharp.tensor
+    let x = dsharp.tensor(exog,dtype=Dtype.Float64)
+    let y = dsharp.tensor(endog,dtype=Dtype.Float64)
     let nobs' = y.nelement
     let coefs' = (x.transpose().matmul(x).inv()).matmul(x.transpose().matmul(y))
     let yhat = x.matmul(coefs')
