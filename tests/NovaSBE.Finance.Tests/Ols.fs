@@ -38,11 +38,11 @@ http.Dispose()
 
 module Statsmodels =
     let guerry = 
-        CsvProvider<"TestData/HistData/Guerry.csv",ResolutionFolder = __SOURCE_DIRECTORY__>.GetSample().Rows
+        CsvFile.Load(Path.Combine(__SOURCE_DIRECTORY__,"TestData/HistData/Guerry.csv")).Rows
         |> Seq.map (fun x ->
-            {| Lottery = float x.Lottery
-               Literacy = float x.Literacy
-               LogPopulation = x.Pop1831 |> float |> log |})
+            {| Lottery = float x["Lottery"]
+               Literacy = float x["Literacy"]
+               LogPopulation = x["Pop1831"] |> float |> log |})
     
     let model = Ols("Lottery ~ Literacy + LogPopulation", guerry)
     let results = model.fit()
