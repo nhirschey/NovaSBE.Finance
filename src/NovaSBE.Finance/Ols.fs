@@ -8,7 +8,7 @@ open FSharp.Stats.Distributions
 open DiffSharp
 
 // The config seems to get ignored so I manually set float64 below
-dsharp.config(dtype=Dtype.Float64,backend=Backend.Reference)
+dsharp.config (dtype = Dtype.Float64, backend = Backend.Reference)
 
 open NovaSBE.Finance.Formula
 
@@ -30,30 +30,32 @@ let internal forg prec x =
 type CovType = Nonrobust
 
 type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, exog_names, intercept, covtype) =
-    let x = dsharp.tensor(exog,dtype=Dtype.Float64)
-    let y = dsharp.tensor(endog,dtype=Dtype.Float64)
+    let x = dsharp.tensor (exog, dtype = Dtype.Float64)
+    let y = dsharp.tensor (endog, dtype = Dtype.Float64)
     let nobs' = y.nelement
-    let coefs' = (x.transpose().matmul(x).inv()).matmul(x.transpose().matmul(y))
-    let yhat = x.matmul(coefs')
+    let coefs' = (x.transpose().matmul(x).inv ()).matmul (x.transpose().matmul (y))
+    let yhat = x.matmul (coefs')
 
     let ss =
         if intercept then
-            let ybar = y.mean()
-            (y - ybar).pow(2.0).sum()
+            let ybar = y.mean ()
+            (y - ybar).pow(2.0).sum ()
         else
-            y.pow(2.0).sum()
+            y.pow(2.0).sum ()
 
     let errors = y - yhat
-    let ssr' = errors.pow(2.0).sum() |> float
+    let ssr' = errors.pow(2.0).sum () |> float
     let ess' = float ss - ssr'
     let sigma2_hat = ssr' / float df_resid
 
-    let stderrors =
-        (sigma2_hat * x.transpose().matmul(x).inv()).diagonal().pow(0.5)
+    let stderrors = (sigma2_hat * x.transpose().matmul(x).inv ()).diagonal().pow (0.5)
     let tv = coefs' / stderrors
 
     let studentT = Continuous.StudentT.Init 0.0 1.0 df_resid
-    let pvalues' = tv.toArray1D() |> Array.map (fun t -> 2.0 * (1.0 - (studentT.CDF(abs t))))
+
+    let pvalues' =
+        tv.toArray1D () |> Array.map (fun t -> 2.0 * (1.0 - (studentT.CDF(abs t))))
+
     let fvalue' = ((ss - ssr') / float df_model) / (ssr' / float df_resid) |> float
 
     let f_pvalue' =
@@ -74,19 +76,19 @@ type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, e
     /// The p-value of the F-statistic
     member _.f_pvalue = f_pvalue'
     /// The fitted values of the model
-    member _.fittedvalues = yhat.toArray1D<float>()
+    member _.fittedvalues = yhat.toArray1D<float> ()
     /// The mean squared error of the model
     member _.mse_model = ess' / float df_model
     /// The mean squared error of the residuals
     member _.mse_resid = ssr' / float df_resid
     /// Total mean squared error
-    member _.mse_total = float (y.pow(2.0).sum())/ float nobs' 
+    member _.mse_total = float (y.pow(2.0).sum ()) / float nobs'
     /// The number of observations
     member _.nobs = nobs'
     /// Two-sided p-values for the model coefficients
     member _.pvalues = (exog_names, pvalues') ||> Array.zip |> Map
     /// The model residuals
-    member _.resid = errors.toArray1D<float>()
+    member _.resid = errors.toArray1D<float> ()
     /// The R-squared of the model
     member _.rsquared = r2
     /// The adjusted R-squared of the model
@@ -94,9 +96,9 @@ type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, e
     /// Sum of squared residuals
     member _.ssr = ssr'
     /// The t-statistics of the model coefficients
-    member _.tvalues = (exog_names, tv.toArray1D<float>()) ||> Array.zip |> Map
+    member _.tvalues = (exog_names, tv.toArray1D<float> ()) ||> Array.zip |> Map
     /// The estimated model coefficients
-    member _.coefs = (exog_names, coefs'.toArray1D<float>()) ||> Array.zip |> Map
+    member _.coefs = (exog_names, coefs'.toArray1D<float> ()) ||> Array.zip |> Map
 
     /// Summarise the regression results
     member _.summary(?yname: string, ?xname: seq<string>, ?title: string, ?alpha: float, ?slim: bool) =
@@ -183,7 +185,8 @@ type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, e
                     forg 3 (coefs'[i] + criticalT * stderrors[i] |> float) ] ]
             |> padWidth
 
-        let table = top @ table_params
+        let border = String.init table_params[0].Length (fun _ -> "=")
+        let table = border :: top @ border.Replace("=","-") :: table_params @ [ border ]
 
         table |> String.concat "\n"
 
