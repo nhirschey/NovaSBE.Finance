@@ -202,10 +202,9 @@ type Ols<'Record>(formula: string, data: 'Record seq) =
     let fields = Reflection.FSharpType.GetRecordFields schema
 
     let getField variable =
-        fields
-        |> Array.find (fun f -> f.Name = variable)
-        |> Reflection.FSharpValue.PreComputeRecordFieldReader
-
+        match fields |> Array.tryFind (fun f -> f.Name = variable) with
+        | Some field -> field |> Reflection.FSharpValue.PreComputeRecordFieldReader
+        | None -> failwith $"Your data does not have a field named {variable}. Check spelling in your formula."
     let xfields = xvars |> Seq.map getField |> Seq.toArray
     let yfield = getField yvar
 
