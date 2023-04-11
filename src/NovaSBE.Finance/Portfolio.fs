@@ -134,3 +134,41 @@ let getSampleMonths (sampleStart:DateTime, sampleEnd:DateTime) =
             else window
     loop sampleEnd [sampleStart]
     |> List.rev
+
+type SecurityReturn =
+    { SecurityId: SecurityId
+      Date: DateTime
+      Return: float }
+type Signal =
+    { SecurityId: SecurityId 
+      FormationDate: DateTime 
+      Signal: float }
+type Backtest(returns:seq<SecurityReturn>,signals:seq<Signal>) =
+    let returns = returns |> Seq.toArray
+    let signals = signals |> Seq.toArray
+    let getReturn (id:SecurityId, date:DateTime) =
+        returns
+        |> Array.tryFind(fun x -> x.SecurityId = id && x.Date = date)
+        |> Option.map(fun x -> (x.SecurityId, x.Return))
+    let getSignal (id:SecurityId, date:DateTime) =
+        signals
+        |> Array.tryFind(fun x -> x.SecurityId = id && x.FormationDate = date)
+        |> Option.map(fun x -> (x.SecurityId, x.Signal))
+    let getMarketCap (id:SecurityId, date:DateTime) =
+        None
+    let getSampleMonths (sampleStart:DateTime, sampleEnd:DateTime) =
+        getSampleMonths (sampleStart, sampleEnd)
+    let assignSignalSort name n (xs: SecuritiesWithSignals) =
+        assignSignalSort name n xs
+    let giveValueWeights (x: AssignedPortfolio) =
+        giveValueWeights getMarketCap x
+    let getPortfolioReturn (x: Portfolio) =
+        getPortfolioReturn getReturn x
+    member this.GetSampleMonths (sampleStart:DateTime, sampleEnd:DateTime) =
+        getSampleMonths (sampleStart, sampleEnd)
+    member this.AssignSignalSort name n (xs: SecuritiesWithSignals) =
+        assignSignalSort name n xs
+    member this.GiveValueWeights (x: AssignedPortfolio) =
+        giveValueWeights x
+    member this.GetPortfolioReturn (x: Portfolio) =
+        getPortfolioReturn x
