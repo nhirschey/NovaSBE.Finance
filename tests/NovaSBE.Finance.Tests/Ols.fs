@@ -3,6 +3,7 @@
 #r "nuget: FsUnit.xUnit"
 #r "nuget: FSharp.Data"
 #r "nuget: FSharp.Stats"
+#r "nuget: DiffSharp-lite"
 #else
 module NovaSBE.Finance.Tests.Ols
 #endif
@@ -179,3 +180,9 @@ module Statsmodels =
         for x in expected do 
             printfn $"{x}"
             smry |> should haveSubstring x
+
+    [<Fact>]
+    let ``fail when variable name is not in collection`` () =
+        let msg = "Your data does not have a field named LOTTERY. Check spelling in your formula."
+        (fun () -> Ols("LOTTERY ~ Literacy + LogPopulation", guerry) |> ignore)
+        |> should (throwWithMessage msg) typeof<System.Exception>
