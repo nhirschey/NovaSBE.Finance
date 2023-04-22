@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="French.fs" />
+    <Compile Include="Portfolio2.fs" />
     <Compile Include="Portfolio.fs" />
     <Compile Include="VolatilityManaged.fs" />
     <Compile Include="Formula.fs" />
