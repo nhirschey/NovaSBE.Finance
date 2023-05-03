@@ -4,6 +4,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Utils.fs" />
     <Compile Include="French.fs" />
     <Compile Include="Portfolio2.fs" />
     <Compile Include="Portfolio.fs" />
@@ -13,9 +14,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DiffSharp-lite" Version="1.0.7" />
-    <PackageReference Include="FSharp.Data" Version="5.0.2" />
-    <PackageReference Include="FSharp.Stats" Version="0.4.11" />
-    <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.1.8" PrivateAssets="all" />
-    <PackageReference Include="Quotes.YahooFinance" Version="0.0.5" />
+    <PackageReference Include="FSharp.Data" Version="[4.0,6.0.0)" />
+    <PackageReference Include="FSharp.Stats" Version="0.4.*" />
+    <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="[0.1.8]" PrivateAssets="all" />
+    <PackageReference Include="Quotes.YahooFinance" Version="0.*" />
   </ItemGroup>
 </Project>
