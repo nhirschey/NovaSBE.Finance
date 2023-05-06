@@ -1,10 +1,11 @@
 # Changelog
 
-## 0.3.0-beta.1 - 2023-05-03
+## 0.3.0-beta.2 - 2023-05-06
 
 ### Added
 
-* Added NovaSBE.Utils.download
+* NovaSBE.Utils.download
+* Ols predict method
 
 ### Fixed
 
