@@ -29,6 +29,30 @@ let internal forg prec x =
 
 type CovType = Nonrobust
 
+let design<'Record> intercept yvar xvars (data: 'Record seq) =
+    let schema = typeof<'Record>
+    let fields = Reflection.FSharpType.GetRecordFields schema
+
+    let getField variable =
+        match fields |> Array.tryFind (fun f -> f.Name = variable) with
+        | Some field -> field |> Reflection.FSharpValue.PreComputeRecordFieldReader
+        | None -> failwith $"Your data does not have a field named {variable}. Check spelling in your formula."
+
+    let xfields = xvars |> Seq.map getField |> Seq.toArray
+    let yfield = getField yvar
+
+    let exog =
+        data
+        |> Seq.map (fun row ->
+            let xf = xfields |> Seq.map (fun getter -> getter row :?> float)
+
+            if not intercept then xf else Seq.append [ 1. ] xf
+            |> Seq.toArray)
+        |> Seq.toArray
+
+    let endog = data |> Seq.map (fun row -> yfield row :?> float) |> Seq.toArray
+    exog, endog
+
 type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, exog_names, intercept, covtype) =
     let x = dsharp.tensor (exog, dtype = Dtype.Float64)
     let y = dsharp.tensor (endog, dtype = Dtype.Float64)
@@ -186,10 +210,19 @@ type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, e
             |> padWidth
 
         let border = String.init table_params[0].Length (fun _ -> "=")
-        let table = border :: top @ border.Replace("=","-") :: table_params @ [ border ]
+        let table = border :: top @ border.Replace("=", "-") :: table_params @ [ border ]
 
         table |> String.concat "\n"
 
+    /// Predict values using the model
+    member _.predict(data) =
+        let intercept = Array.contains "Intercept" exog_names
+        let xvars = exog_names |> Array.filter (fun x -> x <> "Intercept")
+
+        let exog =
+            dsharp.tensor ((design intercept endog_names xvars data) |> fst, dtype = Dtype.Float64)
+
+        exog.matmul(coefs').toArray1D<float> ()
 
 type FitMethod =
     | QR
@@ -205,6 +238,7 @@ type Ols<'Record>(formula: string, data: 'Record seq) =
         match fields |> Array.tryFind (fun f -> f.Name = variable) with
         | Some field -> field |> Reflection.FSharpValue.PreComputeRecordFieldReader
         | None -> failwith $"Your data does not have a field named {variable}. Check spelling in your formula."
+
     let xfields = xvars |> Seq.map getField |> Seq.toArray
     let yfield = getField yvar
 
