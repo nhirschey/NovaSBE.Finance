@@ -189,7 +189,7 @@ type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, e
             |> padWidth
 
         let criticalT =
-            ContinuousDistribution.getCriticalTValue df_resid alpha ContinuousDistribution.TwoTailed
+            Testing.TTest.getCriticalTValue df_resid alpha Testing.TTest.TwoTailed
 
         let table_params =
             [ [ ""
