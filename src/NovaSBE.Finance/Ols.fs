@@ -83,7 +83,7 @@ type RegressionResults(df_model: int, df_resid: int, endog, exog, endog_names, e
     let fvalue' = ((ss - ssr') / float df_model) / (ssr' / float df_resid) |> float
 
     let f_pvalue' =
-        let fdist = ContinuousDistribution.f df_model df_resid
+        let fdist = Continuous.F.Init df_model df_resid
         1.0 - fdist.CDF fvalue'
 
     let r2 = 1.0 - ssr' / ss |> float

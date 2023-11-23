@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0 - 2023-11-23
+
+### Changed
+* Updated FSharp.Stats to 0.5.0
+
 ## 0.3.0 - 2023-07-10
 
 ### Added
