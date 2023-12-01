@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0 - 2023-12-01
+
+### Added
+
+* NovaSBE.Finance added momentum factors.
+
 ## 0.4.1 - 2023-12-01
 
 ### Fixed

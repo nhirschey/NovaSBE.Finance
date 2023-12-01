@@ -26,3 +26,12 @@ let ``Can do ff5 monthly`` () =
     let ff5m = getFF5 Frequency.Monthly
     ff5m.Length |> shouldBeGreaterThan 10
 
+[<Fact>]
+let ``Can do wml daily`` () =
+    let wmld = getWML Frequency.Daily
+    wmld.Length |> shouldBeGreaterThan 10
+
+[<Fact>]
+let ``Can do wml monthly`` () =
+    let wmlm = getWML Frequency.Monthly
+    wmlm.Length |> shouldBeGreaterThan 10

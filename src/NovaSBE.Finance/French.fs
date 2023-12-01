@@ -25,12 +25,19 @@ type FF5Obs =
       Rf : float 
       Frequency : Frequency } 
 
+type WMLObs = 
+    { Date : DateTime 
+      WML : float
+      Frequency : Frequency }
+
 module internal Utils =
     type FF3Csv = CsvProvider<"Date (string),Mkt-RF,SMB,HML,RF
         19260701,    0.10,   -0.24,   -0.28,   0.009">
 
     type FF5Csv = CsvProvider<"Date (string),Mkt-RF,SMB,HML,RMW,CMA,RF
         19260701,    0.10,   -0.24,   -0.28,0.0,1.2,  0.009">
+
+    type WMLCsv = CsvProvider<"Date (string),Mom (float)">
 
     let frenchDay x = 
         DateTime.ParseExact(x,
@@ -106,4 +113,21 @@ let getFF5 frequency =
           Rmw = float parsedLine.RMW / 100.0
           Cma = float parsedLine.CMA / 100.0
           Rf = float parsedLine.RF / 100.0 
+          Frequency = frequency })
+
+let getWML frequency =
+    let (dataset, dateParser) =
+        match frequency with
+        | Monthly -> "F-F_Momentum_Factor_CSV", frenchMonth
+        | Daily -> "F-F_Momentum_Factor_daily_CSV", frenchDay
+    let data = new StringReader(getData dataset)
+    [| while data.Peek() <> -1 do
+            data.ReadLine() |]
+    |> Array.skipWhile(fun line -> not (line.StartsWith(",Mom")))
+    |> Array.skip 1
+    |> Array.takeWhile(fun line -> line <> "")
+    |> Array.map(fun line -> 
+        let parsedLine = WMLCsv.ParseRows(line).[0] 
+        { Date = dateParser parsedLine.Date
+          WML = float parsedLine.Mom / 100.0
           Frequency = frequency })
