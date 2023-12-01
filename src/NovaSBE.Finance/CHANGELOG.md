@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.1 - 2023-12-01
+
+### Fixed
+
+* For Fama-French 5 Factor model a change in zip archive entry names prevented downloads.
+
+
 ## 0.4.0 - 2023-11-23
 
 ### Changed
