@@ -6,8 +6,7 @@ open System.IO.Compression
 open FSharp.Data
 type Frequency = Daily | Monthly
 type ReturnObs = { Symbol : string; Date : DateTime; Return : float }
-type private FF3Csv = CsvProvider<"Date (string),Mkt-RF,SMB,HML,RF
-    19260701,    0.10,   -0.24,   -0.28,   0.009">
+
 type FF3Obs = 
     { Date : DateTime 
       MktRf : float
@@ -15,8 +14,7 @@ type FF3Obs =
       Hml : float
       Rf : float 
       Frequency : Frequency } 
-type private FF5Csv = CsvProvider<"Date (string),Mkt-RF,SMB,HML,RMW,CMA,RF
-    19260701,    0.10,   -0.24,   -0.28,0.0,1.2,  0.009">
+
 type FF5Obs = 
     { Date : DateTime 
       MktRf : float
@@ -26,34 +24,48 @@ type FF5Obs =
       Cma : float
       Rf : float 
       Frequency : Frequency } 
-let private frenchDay x = 
-    DateTime.ParseExact(x,
-        "yyyyMMdd",
-        Globalization.CultureInfo.InvariantCulture)
-let private frenchMonth x = 
-    DateTime.ParseExact(x,
-        "yyyyMM",
-        Globalization.CultureInfo.InvariantCulture)
 
-let private cache = 
-    let today = DateTime.Now
-    let nextMonth = today.AddMonths(1)
-    let eom = DateTime(nextMonth.Year, nextMonth.Month, 1).AddSeconds(-1.0) 
-    Runtime.Caching.createInternetFileCache "French" (eom - today)
+module internal Utils =
+    type FF3Csv = CsvProvider<"Date (string),Mkt-RF,SMB,HML,RF
+        19260701,    0.10,   -0.24,   -0.28,   0.009">
 
-let private getData (dataset:string) =
-    match cache.TryRetrieve(dataset) with
-    | Some data -> data
-    | None ->
-        //let dataset = "F-F_Research_Data_Factors_CSV"
-        let urlString = $"http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/{dataset}.zip"
-        let request = Http.RequestStream(urlString, httpMethod = "GET",headers = [HttpRequestHeaders.Accept HttpContentTypes.Any])
-        use archive = new ZipArchive(request.ResponseStream,ZipArchiveMode.Read)
-        let file = archive.GetEntry($"{dataset}".Replace("_CSV",".CSV"))
-        use reader = new StreamReader(file.Open())
-        let data  = reader.ReadToEnd()
-        cache.Set(dataset,data)
-        data
+    type FF5Csv = CsvProvider<"Date (string),Mkt-RF,SMB,HML,RMW,CMA,RF
+        19260701,    0.10,   -0.24,   -0.28,0.0,1.2,  0.009">
+
+    let frenchDay x = 
+        DateTime.ParseExact(x,
+            "yyyyMMdd",
+            Globalization.CultureInfo.InvariantCulture)
+    let frenchMonth x = 
+        DateTime.ParseExact(x,
+            "yyyyMM",
+            Globalization.CultureInfo.InvariantCulture)
+
+    let cache = 
+        let today = DateTime.Now
+        let nextMonth = today.AddMonths(1)
+        let eom = DateTime(nextMonth.Year, nextMonth.Month, 1).AddSeconds(-1.0) 
+        Runtime.Caching.createInternetFileCache "French" (eom - today)
+
+    let getData (dataset:string) =
+        match cache.TryRetrieve(dataset) with
+        | Some data -> data
+        | None ->
+            //let dataset = "F-F_Research_Data_Factors_CSV"
+            let urlString = $"http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/{dataset}.zip"
+            let request = Http.RequestStream(urlString, httpMethod = "GET",headers = [HttpRequestHeaders.Accept HttpContentTypes.Any])
+            use archive = new ZipArchive(request.ResponseStream,ZipArchiveMode.Read)
+            let file = 
+                match archive.Entries |> Seq.tryExactlyOne with
+                | None -> failwith $"Expected a single entry but found {Seq.length archive.Entries} entries"
+                | Some file -> file
+            use reader = new StreamReader(file.Open())
+            let data  = reader.ReadToEnd()
+            cache.Set(dataset,data)
+            data
+
+open Utils
+
 let getFF3 frequency =
     let (dataset, dateParser) =
         match frequency with
